@@ -88,7 +88,7 @@ function renderPanel(p, ch) {
   h += `<div class="gh-user">${auth.avatar ? `<img src="${esc(auth.avatar)}" alt="">` : ""}<div style="flex:1"><b>${esc(auth.login)}</b><br><button style="color:var(--info);font-size:12px" data-a="logout">${esc(t("Se déconnecter"))}</button></div></div>`;
   if (!p.gh) {
     h += `<div class="gh-card"><h4>${esc(p.name)}</h4><p>${esc(t("Ce projet n'est pas encore sur GitHub."))}</p>
-      <button class="btn primary" data-a="create">${esc(t("Créer un dépôt privé et synchroniser"))}</button>
+      <button class="btn primary" data-a="create" ${busy ? "disabled" : ""}>${esc(t("Créer un dépôt privé et synchroniser"))}</button>
       <button class="btn" data-a="link">${esc(t("Lier à un dépôt existant…"))}</button></div>`;
   } else {
     const g = p.gh;
@@ -147,7 +147,8 @@ const needAuth = () => { if (auth) return true; app.showView("github"); loginDia
 
 /* ---------------- Repositories ---------------- */
 async function createRepo(p) {
-  if (!needAuth()) return;
+  if (busy || !needAuth()) return; // ignore a second tap while the first one is still running
+  if (p.gh) return sync(p);
   let name = slug(p.name);
   setBusy(true);
   try {

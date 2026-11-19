@@ -8,7 +8,7 @@ import * as Ext from "./extensions.js";
 import * as GH from "./github.js";
 import { initKeybar, updateKeybar } from "./keybar.js";
 
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.0.1";
 const TRASH_DAYS = 30;
 
 /* ======================= State ======================= */
