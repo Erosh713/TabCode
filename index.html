@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<title>TabCode</title>
+<meta name="description" content="Éditeur de code façon VS Code pour tablette et téléphone, hors ligne et open source.">
+<meta name="theme-color" content="#3c3c3c">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="app">
+  <header id="titlebar">
+    <div class="brand"><img src="icons/favicon.svg" alt="" width="18" height="18"><span class="brand-text">TabCode</span></div>
+    <button class="tb-btn" id="projectBtn" data-i18n-title="Projets"><svg class="ico" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span id="projectName">…</span><svg class="ico" viewBox="0 0 24 24" style="width:14px"><path d="m6 9 6 6 6-6"/></svg></button>
+    <div class="tb-spacer"></div>
+    <div id="searchBox" role="button" tabindex="0" data-i18n-title="Ouvrir un fichier (Ctrl+P)"><svg class="ico" viewBox="0 0 24 24" style="width:14px"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span data-i18n="Rechercher un fichier">Rechercher un fichier</span><span class="sb-hint"><kbd>Ctrl</kbd> <kbd>P</kbd></span></div>
+    <div class="tb-spacer"></div>
+    <button class="tb-btn run-btn" id="runBtn" data-i18n-title="Actualiser l'aperçu (Ctrl+Entrée)"><svg class="ico" viewBox="0 0 24 24"><path d="M7 4v16l13-8z" fill="currentColor"/></svg><span class="hide-sm" data-i18n="Lancer">Lancer</span></button>
+    <button class="tb-btn" id="liveBtn" data-i18n-title="Ouvrir le Live Server dans une nouvelle fenêtre"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14"/></svg><span class="hide-md">Live Server</span></button>
+    <button class="tb-btn hide-phone" id="previewToggle" data-i18n-title="Afficher/masquer l'aperçu (Ctrl+Shift+V)"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></svg></button>
+    <button class="tb-btn" id="moreBtn" data-i18n-title="Menu"><svg class="ico" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg></button>
+  </header>
+
+  <div id="main">
+    <nav id="activity">
+      <button class="act on" data-view="explorer" data-i18n-title="Explorateur (Ctrl+Shift+E)"><svg class="ico" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg></button>
+      <button class="act" data-view="search" data-i18n-title="Rechercher dans les fichiers (Ctrl+Shift+F)"><svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <button class="act" data-view="github" data-i18n-title="GitHub : synchroniser et publier"><svg class="ico" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.2"/><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="8" r="2.2"/><path d="M6 8.2v7.6M18 10.2c0 4-6 3-10.5 6.3"/></svg><span class="act-badge" id="ghBadge"></span></button>
+      <button class="act" data-view="extensions" data-i18n-title="Extensions"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="1"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1"/><path d="m14.2 6.8 3-3 3 3-3 3z"/></svg></button>
+      <button class="act" data-view="trash" data-i18n-title="Corbeille"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button>
+      <div class="act-spacer"></div>
+      <button class="act" id="actHelp" data-i18n-title="Raccourcis clavier"><svg class="ico" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></button>
+      <button class="act" id="actSettings" data-i18n-title="Paramètres (Ctrl+,)"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    </nav>
+
+    <aside id="sidebar">
+      <!-- Explorer -->
+      <section class="view" id="view-explorer">
+        <div class="side-head"><span class="grow" data-i18n="Explorateur">Explorateur</span>
+          <button id="newFileBtn" data-i18n-title="Nouveau fichier"><svg class="ico" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14h6"/></svg></button>
+          <button id="newFolderBtn" data-i18n-title="Nouveau dossier"><svg class="ico" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v6M9 13h6"/></svg></button>
+          <button id="importBtn" data-i18n-title="Importer des fichiers ou un .zip"><svg class="ico" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
+          <button id="collapseBtn" data-i18n-title="Tout replier"><svg class="ico" viewBox="0 0 24 24"><path d="M7 10l5-5 5 5M7 19l5-5 5 5"/></svg></button>
+        </div>
+        <div class="side-section" id="projSection"><svg class="ico chev open" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg><span id="projSectionName"></span></div>
+        <div class="side-body" id="tree"></div>
+      </section>
+      <!-- Search -->
+      <section class="view" id="view-search" hidden>
+        <div class="side-head"><span class="grow" data-i18n="Rechercher">Rechercher</span></div>
+        <div class="search-inputs">
+          <input id="searchInput" data-i18n-placeholder="Rechercher" placeholder="Rechercher" autocomplete="off" spellcheck="false" autocapitalize="off">
+          <input id="replaceInput" data-i18n-placeholder="Remplacer (facultatif)" placeholder="Remplacer (facultatif)" autocomplete="off" spellcheck="false" autocapitalize="off">
+          <button class="btn" id="replaceAllBtn" data-i18n="Tout remplacer">Tout remplacer</button>
+        </div>
+        <div class="sr-count" id="searchCount"></div>
+        <div class="side-body" id="searchResults"></div>
+      </section>
+      <!-- GitHub -->
+      <section class="view" id="view-github" hidden>
+        <div class="side-head"><span class="grow">GitHub</span></div>
+        <div class="side-body pad" id="ghPanel"></div>
+      </section>
+      <!-- Extensions -->
+      <section class="view" id="view-extensions" hidden>
+        <div class="side-head"><span class="grow" data-i18n="Extensions">Extensions</span></div>
+        <div class="search-inputs"><input id="extFilter" data-i18n-placeholder="Filtrer les extensions" placeholder="Filtrer les extensions" autocomplete="off" spellcheck="false"></div>
+        <div class="side-body" id="extList"></div>
+      </section>
+      <!-- Trash -->
+      <section class="view" id="view-trash" hidden>
+        <div class="side-head"><span class="grow" data-i18n="Corbeille">Corbeille</span><button id="emptyTrashBtn" data-i18n-title="Vider la corbeille"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button></div>
+        <div class="side-body" id="trashList"></div>
+      </section>
+    </aside>
+
+    <section id="workspace">
+      <div id="editorCol">
+        <div id="tabs"></div>
+        <div id="crumbs"></div>
+        <div id="editorHost">
+          <div id="editor"></div>
+          <div id="imageView"><img id="imageEl" alt=""><div class="meta" id="imageMeta"></div></div>
+          <div id="welcome">
+            <img src="icons/icon-192.png" alt="" width="72" height="72" style="opacity:.35">
+            <div data-i18n="Aucun fichier ouvert">Aucun fichier ouvert</div>
+            <table>
+              <tr><td><kbd>Ctrl</kbd> <kbd>P</kbd></td><td data-i18n="Ouvrir un fichier">Ouvrir un fichier</td></tr>
+              <tr><td><kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>P</kbd></td><td data-i18n="Toutes les commandes">Toutes les commandes</td></tr>
+              <tr><td><kbd>Alt</kbd> <kbd>N</kbd></td><td data-i18n="Nouveau fichier">Nouveau fichier</td></tr>
+              <tr><td><kbd>Ctrl</kbd> <kbd>Entrée</kbd></td><td data-i18n="Lancer l'aperçu">Lancer l'aperçu</td></tr>
+            </table>
+          </div>
+          <div id="loading"><div><div class="spinner"></div><span data-i18n="Chargement de l'éditeur…">Chargement de l'éditeur…</span></div></div>
+        </div>
+        <div id="keybar" hidden></div>
+      </div>
+      <div id="splitter"></div>
+      <div id="previewCol">
+        <div class="pane-head">
+          <span class="pane-title"><span data-i18n="Aperçu">Aperçu</span> · <span class="pane-file" id="previewFileName">index.html</span></span>
+          <div style="flex:1"></div>
+          <button class="icon-btn" id="pvRefresh" data-i18n-title="Actualiser (Ctrl+Entrée)"><svg class="ico" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
+          <button class="icon-btn on" id="pvAuto" data-i18n-title="Actualisation automatique"><svg class="ico" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></button>
+          <select id="pvDevice" data-i18n-title="Taille d'écran">
+            <option value="0" data-i18n="Adaptatif">Adaptatif</option>
+            <option value="375">Mobile · 375</option>
+            <option value="768">Tablette · 768</option>
+            <option value="1280">Desktop · 1280</option>
+          </select>
+          <button class="icon-btn hide-phone" id="pvLayout" data-i18n-title="Aperçu à droite / en dessous"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 13h18"/></svg></button>
+          <button class="icon-btn" id="pvConsole" data-i18n-title="Console (Ctrl+J)"><svg class="ico" viewBox="0 0 24 24"><path d="m5 8 4 4-4 4M12 16h7"/></svg></button><span class="badge" id="errBadge">0</span>
+          <button class="icon-btn hide-phone" id="pvFull" data-i18n-title="Plein écran"><svg class="ico" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+        </div>
+        <div id="previewWrap"><iframe id="preview" title="Aperçu"></iframe></div>
+        <div id="consoleBox" class="hidden">
+          <div class="pane-head small">
+            <span class="pane-title">Console</span><div style="flex:1"></div>
+            <button class="icon-btn" id="consoleClear" data-i18n-title="Effacer la console"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="m6.5 6.5 11 11"/></svg></button>
+            <button class="icon-btn" id="consoleClose" data-i18n-title="Fermer"><svg class="ico" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+          </div>
+          <div id="consoleLog"></div>
+          <div id="consoleInput"><span>›</span><input id="consoleField" data-i18n-placeholder="Exécuter du JavaScript dans la page…" placeholder="Exécuter du JavaScript dans la page…" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <nav id="phoneNav">
+    <button data-pane="files"><svg class="ico" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span data-i18n="Fichiers">Fichiers</span></button>
+    <button data-pane="code" class="on"><svg class="ico" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg><span>Code</span></button>
+    <button data-pane="preview"><svg class="ico" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span data-i18n="Aperçu">Aperçu</span></button>
+    <button data-pane="more"><svg class="ico" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg><span data-i18n="Plus">Plus</span></button>
+  </nav>
+
+  <footer id="statusbar">
+    <button class="sb" id="sbSync" data-i18n-title="Synchronisation GitHub"><svg class="ico" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 8v8M18 10c0 4-6 3-10 6"/></svg><span id="sbSyncText" data-i18n="Local">Local</span></button>
+    <button class="sb" id="sbErrors" data-i18n-title="Problèmes"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg><span id="sbErrCount">0</span><svg class="ico" viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg><span id="sbWarnCount">0</span></button>
+    <span class="sb hide-sm" id="sbOffline" hidden><svg class="ico" viewBox="0 0 24 24"><path d="M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 5.2-2.8M19 13a10 10 0 0 0-2.5-1.8M12 20h.01"/></svg><span data-i18n="Hors ligne">Hors ligne</span></span>
+    <div class="sb-spacer"></div>
+    <button class="sb" id="sbPos">Ln 1, Col 1</button>
+    <button class="sb hide-sm" id="sbIndent"></button>
+    <span class="sb hide-sm">UTF-8</span>
+    <button class="sb" id="sbLang">HTML</button>
+    <button class="sb hide-sm" id="sbPrettier" data-i18n-title="Prettier">✓ Prettier</button>
+  </footer>
+</div>
+
+<div id="overlay"></div>
+<div class="menu" id="menu"></div>
+<div id="palette"><input id="paletteInput" autocomplete="off" spellcheck="false" autocapitalize="off"><div id="paletteList"></div></div>
+<div id="dialog" role="dialog" aria-modal="true"></div>
+<div id="toast"></div>
+<input type="file" id="fileInput" multiple>
+
+<!-- Classic scripts first: JSZip must load before the AMD loader -->
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/emmet-monaco.min.js"></script>
+<script src="js/db.js"></script>
+<script src="vendor/monaco/vs/loader.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
