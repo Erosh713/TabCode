@@ -8,7 +8,7 @@ import * as Ext from "./extensions.js";
 import * as GH from "./github.js";
 import { initKeybar, updateKeybar } from "./keybar.js";
 
-const APP_VERSION = "1.0.3";
+const APP_VERSION = "1.0.4";
 const TRASH_DAYS = 30;
 
 /* ======================= State ======================= */
@@ -16,7 +16,7 @@ const DEFAULT_SETTINGS = {
   lang: (navigator.language || "fr").toLowerCase().startsWith("fr") ? "fr" : "en",
   theme: "dark-plus", fontSize: 15, tabSize: 2, wordWrap: "on", minimap: true, lineNumbers: "on",
   autoPreview: true, layout: "auto", showPreview: true, split: 0.55, sidebar: true, view: "explorer", device: "0",
-  keybar: "auto", touchSuggest: false, current: null, ext: {}, formatOnSave: false
+  keybar: "auto", touchSuggest: false, androidInput: "nopredict", current: null, ext: {}, formatOnSave: false
 };
 const app = {
   version: APP_VERSION, monaco: null, editor: null,
@@ -208,6 +208,11 @@ function initEditor() {
   cmd(K.CtrlCmd | K.Alt | C.UpArrow, run("editor.action.insertCursorAbove"));
   cmd(C.F2, () => ["javascript", "typescript"].includes(langOf(P().active || "")) ? editor.trigger("kb", "editor.action.rename") : renameFile(P().active));
 
+  applyInputMode();
+  // Monaco rewrites some textarea attributes (inputmode included) when the model or options change
+  editor.onDidChangeModel(() => setTimeout(applyInputMode, 0));
+  editor.onDidChangeConfiguration(() => setTimeout(applyInputMode, 0));
+  editor.onDidFocusEditorText(applyInputMode);
   $("#loading").remove();
   Ext.init(app);
   GH.init(app);
@@ -264,6 +269,18 @@ function onEditorChange(e) {
     app.editor.setPosition(pos);
   }, 0);
 }
+/* Android keyboards with predictive text (Samsung Keyboard especially) keep the word "in composition"
+   and the editor only shows the last letter at the next key press. Asking for a URL-type keyboard turns
+   predictions off, so every letter is sent straight away. */
+const isAndroid = /Android/i.test(navigator.userAgent);
+function applyInputMode() {
+  const ta = app.editor && app.editor.getDomNode() && app.editor.getDomNode().querySelector("textarea");
+  if (!ta) return;
+  ta.setAttribute("autocomplete", "off"); ta.setAttribute("autocorrect", "off"); ta.setAttribute("autocapitalize", "off"); ta.setAttribute("spellcheck", "false");
+  if (isAndroid && app.settings.androidInput === "nopredict") { ta.setAttribute("inputmode", "url"); ta.setAttribute("enterkeyhint", "enter"); }
+  else ta.removeAttribute("inputmode");
+}
+app.applyInputMode = applyInputMode;
 /* On-screen keyboards (Samsung, Gboard…) keep the word being typed "in composition", and Monaco
    waits for the word to end before suggesting: open the suggestion list ourselves while typing. */
 const coarsePointer = matchMedia("(pointer:coarse)");
@@ -1050,19 +1067,20 @@ function openSettings() {
       <label for="sLines">${esc(t("Numéros de ligne"))}</label><select id="sLines"><option value="on">${esc(t("Affichés"))}</option><option value="relative">${esc(t("Relatifs"))}</option><option value="off">${esc(t("Masqués"))}</option></select>
       <label for="sAuto">${esc(t("Aperçu automatique"))}</label><select id="sAuto"><option value="1">${esc(t("Activé"))}</option><option value="0">${esc(t("Désactivé"))}</option></select>
       <label for="sLayout">${esc(t("Position de l'aperçu"))}</label><select id="sLayout"><option value="auto">${esc(t("Automatique"))}</option><option value="side">${esc(t("À droite"))}</option><option value="stack">${esc(t("En dessous"))}</option></select>
+      <label for="sAndroid">${esc(t("Clavier Android"))}</label><select id="sAndroid"><option value="nopredict">${esc(t("Sans prédiction (recommandé)"))}</option><option value="normal">${esc(t("Normal"))}</option></select>
       <label for="sTouchSug">${esc(t("Suggestions pendant la frappe au doigt (expérimental)"))}</label><select id="sTouchSug"><option value="0">${esc(t("Désactivé"))}</option><option value="1">${esc(t("Activé"))}</option></select>
       <label for="sKeybar">${esc(t("Barre de touches tactile"))}</label><select id="sKeybar"><option value="auto">${esc(t("Automatique (clavier à l'écran)"))}</option><option value="always">${esc(t("Toujours"))}</option><option value="never">${esc(t("Jamais"))}</option></select>
     </div>
     <div class="row"><button class="btn primary" id="sOk">${esc(t("Fermer"))}</button></div>`, d => {
     const set = (id, v) => d.querySelector(id).value = v;
     set("#sLang", getLang()); set("#sTheme", S.theme); set("#sFont", S.fontSize); set("#sTab", S.tabSize); set("#sWrap", S.wordWrap);
-    set("#sMini", S.minimap ? "1" : "0"); set("#sLines", S.lineNumbers); set("#sAuto", S.autoPreview ? "1" : "0"); set("#sLayout", S.layout); set("#sKeybar", S.keybar); set("#sTouchSug", S.touchSuggest ? "1" : "0");
+    set("#sMini", S.minimap ? "1" : "0"); set("#sLines", S.lineNumbers); set("#sAuto", S.autoPreview ? "1" : "0"); set("#sLayout", S.layout); set("#sKeybar", S.keybar); set("#sTouchSug", S.touchSuggest ? "1" : "0"); set("#sAndroid", S.androidInput);
     d.querySelectorAll("select,input").forEach(el => el.onchange = () => {
       const lang = d.querySelector("#sLang").value;
       S.fontSize = Math.max(10, Math.min(30, +d.querySelector("#sFont").value || 15));
       S.tabSize = +d.querySelector("#sTab").value; S.wordWrap = d.querySelector("#sWrap").value;
       S.minimap = d.querySelector("#sMini").value === "1"; S.lineNumbers = d.querySelector("#sLines").value;
-      S.autoPreview = d.querySelector("#sAuto").value === "1"; S.layout = d.querySelector("#sLayout").value; S.keybar = d.querySelector("#sKeybar").value; S.touchSuggest = d.querySelector("#sTouchSug").value === "1";
+      S.autoPreview = d.querySelector("#sAuto").value === "1"; S.layout = d.querySelector("#sLayout").value; S.keybar = d.querySelector("#sKeybar").value; S.touchSuggest = d.querySelector("#sTouchSug").value === "1"; S.androidInput = d.querySelector("#sAndroid").value; applyInputMode();
       if (d.querySelector("#sTheme").value !== S.theme) setTheme(d.querySelector("#sTheme").value);
       saveSettings(); applyLayout(); updateKeybar();
       if (app.editor) { app.editor.updateOptions({ fontSize: S.fontSize, wordWrap: S.wordWrap, minimap: { enabled: S.minimap && innerWidth > 900 }, lineNumbers: S.lineNumbers }); models.forEach(m => m.updateOptions({ tabSize: S.tabSize })); updateLang(); }
