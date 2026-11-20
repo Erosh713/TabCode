@@ -8,7 +8,7 @@ import * as Ext from "./extensions.js";
 import * as GH from "./github.js";
 import { initKeybar, updateKeybar } from "./keybar.js";
 
-const APP_VERSION = "1.0.1";
+const APP_VERSION = "1.0.2";
 const TRASH_DAYS = 30;
 
 /* ======================= State ======================= */
@@ -251,6 +251,7 @@ function onEditorChange(e) {
   if (app.settings.autoPreview) schedulePreview();
   if (e.isUndoing || e.isRedoing || e.changes.length !== 1) return;
   const ch = e.changes[0];
+  if (/[\w-]$/.test(ch.text) && coarsePointer.matches) scheduleTouchSuggest();
   if (ch.text !== ">" || model.getLanguageId() !== "html") return;
   setTimeout(() => {
     const pos = app.editor.getPosition(); if (!pos) return;
@@ -262,6 +263,20 @@ function onEditorChange(e) {
     app.editor.executeEdits("autoclose", [{ range: new app.monaco.Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column), text: `</${m[1]}>` }]);
     app.editor.setPosition(pos);
   }, 0);
+}
+/* On-screen keyboards (Samsung, Gboard…) keep the word being typed "in composition", and Monaco
+   waits for the word to end before suggesting: open the suggestion list ourselves while typing. */
+const coarsePointer = matchMedia("(pointer:coarse)");
+let touchSuggestTimer = null;
+function scheduleTouchSuggest() {
+  clearTimeout(touchSuggestTimer);
+  touchSuggestTimer = setTimeout(() => {
+    const ed = app.editor; if (!ed || !ed.hasTextFocus()) return;
+    let visible = false; try { visible = !!ed._contextKeyService.getContextKeyValue("suggestWidgetVisible"); } catch (er) {}
+    if (visible) return;
+    const ctrl = ed.getContribution("editor.contrib.suggestController");
+    try { ctrl && ctrl.triggerSuggest(undefined, true); } catch (er) {}
+  }, 140);
 }
 function updateProblems() {
   const monaco = app.monaco; if (!monaco) return;

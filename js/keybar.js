@@ -3,7 +3,7 @@ import { $ } from "./util.js";
 
 let app = null, maxH = 0, lastOrient = null;
 const KEYS = [
-  ["Tab", "tab", "wide"], ["Esc", "esc", "wide"], "|",
+  ["Tab", "tab", "wide"], ["💡", "suggest"], ["Esc", "esc", "wide"], "|",
   ["←", "left"], ["↑", "up"], ["↓", "down"], ["→", "right"], "|",
   ["<"], [">"], ["/"], ["="], ['"'], ["'"], ["{"], ["}"], ["("], [")"], ["["], ["]"], [";"], [":"], ["."], ["#"], ["!"], ["-"], ["_"], ["$"], ["`"], ["*"], ["&"], ["|"], "|",
   ["↶", "undo"], ["↷", "redo"], ["⌘", "palette", "wide"]
@@ -22,6 +22,7 @@ function press(action, text) {
     case "right": ed.trigger("keybar", "cursorRight"); break;
     case "up": suggest ? ed.trigger("keybar", "selectPrevSuggestion") : ed.trigger("keybar", "cursorUp"); break;
     case "down": suggest ? ed.trigger("keybar", "selectNextSuggestion") : ed.trigger("keybar", "cursorDown"); break;
+    case "suggest": ed.trigger("keybar", "editor.action.triggerSuggest", {}); break;
     case "undo": ed.trigger("keybar", "undo"); break;
     case "redo": ed.trigger("keybar", "redo"); break;
     case "palette": app.openPalette(">"); break;
