@@ -146,6 +146,7 @@ export const EN = {
   "À droite": "Right",
   "En dessous": "Below",
   "Barre de touches tactile": "Touch key bar",
+  "Suggestions pendant la frappe au doigt (expérimental)": "Suggestions while typing on touch (experimental)",
   "Automatique (clavier à l'écran)": "Automatic (on-screen keyboard)",
   "Toujours": "Always",
   "Jamais": "Never",

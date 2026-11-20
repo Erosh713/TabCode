@@ -8,7 +8,7 @@ import * as Ext from "./extensions.js";
 import * as GH from "./github.js";
 import { initKeybar, updateKeybar } from "./keybar.js";
 
-const APP_VERSION = "1.0.2";
+const APP_VERSION = "1.0.3";
 const TRASH_DAYS = 30;
 
 /* ======================= State ======================= */
@@ -16,7 +16,7 @@ const DEFAULT_SETTINGS = {
   lang: (navigator.language || "fr").toLowerCase().startsWith("fr") ? "fr" : "en",
   theme: "dark-plus", fontSize: 15, tabSize: 2, wordWrap: "on", minimap: true, lineNumbers: "on",
   autoPreview: true, layout: "auto", showPreview: true, split: 0.55, sidebar: true, view: "explorer", device: "0",
-  keybar: "auto", current: null, ext: {}, formatOnSave: false
+  keybar: "auto", touchSuggest: false, current: null, ext: {}, formatOnSave: false
 };
 const app = {
   version: APP_VERSION, monaco: null, editor: null,
@@ -251,7 +251,7 @@ function onEditorChange(e) {
   if (app.settings.autoPreview) schedulePreview();
   if (e.isUndoing || e.isRedoing || e.changes.length !== 1) return;
   const ch = e.changes[0];
-  if (/[\w-]$/.test(ch.text) && coarsePointer.matches) scheduleTouchSuggest();
+  if (app.settings.touchSuggest && /[\w-]$/.test(ch.text) && coarsePointer.matches) scheduleTouchSuggest();
   if (ch.text !== ">" || model.getLanguageId() !== "html") return;
   setTimeout(() => {
     const pos = app.editor.getPosition(); if (!pos) return;
@@ -274,8 +274,9 @@ function scheduleTouchSuggest() {
     const ed = app.editor; if (!ed || !ed.hasTextFocus()) return;
     let visible = false; try { visible = !!ed._contextKeyService.getContextKeyValue("suggestWidgetVisible"); } catch (er) {}
     if (visible) return;
+    // Ask the suggestion model directly: going through the editor would re-focus it and break the word being typed
     const ctrl = ed.getContribution("editor.contrib.suggestController");
-    try { ctrl && ctrl.triggerSuggest(undefined, true); } catch (er) {}
+    try { ctrl && ctrl.model && ctrl.model.trigger({ auto: true }); } catch (er) {}
   }, 140);
 }
 function updateProblems() {
@@ -1049,18 +1050,19 @@ function openSettings() {
       <label for="sLines">${esc(t("Numéros de ligne"))}</label><select id="sLines"><option value="on">${esc(t("Affichés"))}</option><option value="relative">${esc(t("Relatifs"))}</option><option value="off">${esc(t("Masqués"))}</option></select>
       <label for="sAuto">${esc(t("Aperçu automatique"))}</label><select id="sAuto"><option value="1">${esc(t("Activé"))}</option><option value="0">${esc(t("Désactivé"))}</option></select>
       <label for="sLayout">${esc(t("Position de l'aperçu"))}</label><select id="sLayout"><option value="auto">${esc(t("Automatique"))}</option><option value="side">${esc(t("À droite"))}</option><option value="stack">${esc(t("En dessous"))}</option></select>
+      <label for="sTouchSug">${esc(t("Suggestions pendant la frappe au doigt (expérimental)"))}</label><select id="sTouchSug"><option value="0">${esc(t("Désactivé"))}</option><option value="1">${esc(t("Activé"))}</option></select>
       <label for="sKeybar">${esc(t("Barre de touches tactile"))}</label><select id="sKeybar"><option value="auto">${esc(t("Automatique (clavier à l'écran)"))}</option><option value="always">${esc(t("Toujours"))}</option><option value="never">${esc(t("Jamais"))}</option></select>
     </div>
     <div class="row"><button class="btn primary" id="sOk">${esc(t("Fermer"))}</button></div>`, d => {
     const set = (id, v) => d.querySelector(id).value = v;
     set("#sLang", getLang()); set("#sTheme", S.theme); set("#sFont", S.fontSize); set("#sTab", S.tabSize); set("#sWrap", S.wordWrap);
-    set("#sMini", S.minimap ? "1" : "0"); set("#sLines", S.lineNumbers); set("#sAuto", S.autoPreview ? "1" : "0"); set("#sLayout", S.layout); set("#sKeybar", S.keybar);
+    set("#sMini", S.minimap ? "1" : "0"); set("#sLines", S.lineNumbers); set("#sAuto", S.autoPreview ? "1" : "0"); set("#sLayout", S.layout); set("#sKeybar", S.keybar); set("#sTouchSug", S.touchSuggest ? "1" : "0");
     d.querySelectorAll("select,input").forEach(el => el.onchange = () => {
       const lang = d.querySelector("#sLang").value;
       S.fontSize = Math.max(10, Math.min(30, +d.querySelector("#sFont").value || 15));
       S.tabSize = +d.querySelector("#sTab").value; S.wordWrap = d.querySelector("#sWrap").value;
       S.minimap = d.querySelector("#sMini").value === "1"; S.lineNumbers = d.querySelector("#sLines").value;
-      S.autoPreview = d.querySelector("#sAuto").value === "1"; S.layout = d.querySelector("#sLayout").value; S.keybar = d.querySelector("#sKeybar").value;
+      S.autoPreview = d.querySelector("#sAuto").value === "1"; S.layout = d.querySelector("#sLayout").value; S.keybar = d.querySelector("#sKeybar").value; S.touchSuggest = d.querySelector("#sTouchSug").value === "1";
       if (d.querySelector("#sTheme").value !== S.theme) setTheme(d.querySelector("#sTheme").value);
       saveSettings(); applyLayout(); updateKeybar();
       if (app.editor) { app.editor.updateOptions({ fontSize: S.fontSize, wordWrap: S.wordWrap, minimap: { enabled: S.minimap && innerWidth > 900 }, lineNumbers: S.lineNumbers }); models.forEach(m => m.updateOptions({ tabSize: S.tabSize })); updateLang(); }
