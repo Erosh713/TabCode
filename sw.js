@@ -2,7 +2,7 @@
 "use strict";
 importScripts("js/db.js");
 
-const VERSION = "54951f746b83"; // replaced by tools/build.py
+const VERSION = "96e86a09ef1d"; // replaced by tools/build.py
 const CACHE = "tabcode-" + VERSION;
 const SCOPE = new URL(self.registration.scope);
 const LIVE = SCOPE.pathname + "live/";   // Live Server window (auto reload)

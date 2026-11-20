@@ -26,6 +26,10 @@
 2. Menu du navigateur (⋮) → **Installer l'application** / **Ajouter à l'écran d'accueil**.
 3. C'est tout : TabCode s'ouvre ensuite depuis son icône, même sans internet.
 
+### Clavier Samsung : lettres qui s'affichent en retard
+
+Si, en tapant au doigt, la dernière lettre n'apparaît qu'à la touche suivante : **Paramètres → Gestion globale → Paramètres du Clavier Samsung → désactive « Texte intuitif »**. (Ou utilise Gboard.)
+
 ## Connecter GitHub (facultatif)
 
 Dans TabCode : icône **GitHub** à gauche → **Se connecter avec un jeton**, puis suis les étapes affichées.

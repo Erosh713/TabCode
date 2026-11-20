@@ -1071,6 +1071,7 @@ function openSettings() {
       <label for="sTouchSug">${esc(t("Suggestions pendant la frappe au doigt (expérimental)"))}</label><select id="sTouchSug"><option value="0">${esc(t("Désactivé"))}</option><option value="1">${esc(t("Activé"))}</option></select>
       <label for="sKeybar">${esc(t("Barre de touches tactile"))}</label><select id="sKeybar"><option value="auto">${esc(t("Automatique (clavier à l'écran)"))}</option><option value="always">${esc(t("Toujours"))}</option><option value="never">${esc(t("Jamais"))}</option></select>
     </div>
+    <p style="font-size:12px;color:var(--muted)">${esc(t("Au doigt, les lettres s'affichent en retard ? Sur une tablette Samsung : Paramètres → Gestion globale → Paramètres du Clavier Samsung → désactive « Texte intuitif ».") )}</p>
     <div class="row"><button class="btn primary" id="sOk">${esc(t("Fermer"))}</button></div>`, d => {
     const set = (id, v) => d.querySelector(id).value = v;
     set("#sLang", getLang()); set("#sTheme", S.theme); set("#sFont", S.fontSize); set("#sTab", S.tabSize); set("#sWrap", S.wordWrap);

@@ -149,6 +149,7 @@ export const EN = {
   "Clavier Android": "Android keyboard",
   "Sans prédiction (recommandé)": "No predictions (recommended)",
   "Normal": "Normal",
+  "Au doigt, les lettres s'affichent en retard ? Sur une tablette Samsung : Paramètres → Gestion globale → Paramètres du Clavier Samsung → désactive « Texte intuitif ».": "Letters show up late when typing on touch? On a Samsung tablet: Settings → General management → Samsung Keyboard settings → turn off “Predictive text”.",
   "Suggestions pendant la frappe au doigt (expérimental)": "Suggestions while typing on touch (experimental)",
   "Automatique (clavier à l'écran)": "Automatic (on-screen keyboard)",
   "Toujours": "Always",
